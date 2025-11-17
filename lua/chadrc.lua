@@ -8,10 +8,16 @@ local M = {}
 M.base46 = {
 	theme = "gatekeeper",
 
-	-- hl_override = {
-	-- 	Comment = { italic = true },
-	-- 	["@comment"] = { italic = true },
-	-- },
+	hl_override = {
+		CursorLine = { bg = "#2e3440" }, -- Brighter current line highlight
+		NvimTreeCursorLine = { bg = "#3a4450" }, -- Brighter nvim-tree selection
+		-- Comment = { italic = true },
+		-- ["@comment"] = { italic = true },
+	},
+
+	hl_add = {
+		NvimTreeCursorLine = { bg = "#3a4450" }, -- Force override nvim-tree selection
+	},
 }
 
 -- M.nvdash = { load_on_startup = true }

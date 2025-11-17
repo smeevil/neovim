@@ -14,27 +14,52 @@ vim.api.nvim_create_autocmd("VimEnter", {
   end,
 })
 
--- Auto-close nvim-tree when it's the last window
+-- Close nvim-tree before quitting if there are other windows
 vim.api.nvim_create_autocmd("QuitPre", {
   callback = function()
+    local wins = vim.api.nvim_list_wins()
     local tree_wins = {}
     local floating_wins = {}
-    local wins = vim.api.nvim_list_wins()
+
     for _, w in ipairs(wins) do
       local bufname = vim.api.nvim_buf_get_name(vim.api.nvim_win_get_buf(w))
-      if bufname:match("NvimTree_") ~= nil then
+      if bufname:match "NvimTree_" ~= nil then
         table.insert(tree_wins, w)
       end
       if vim.api.nvim_win_get_config(w).relative ~= "" then
         table.insert(floating_wins, w)
       end
     end
-    if 1 == #wins - #floating_wins - #tree_wins then
-      -- Should quit, so we close all invalid windows
+
+    -- If only tree + floating windows remain, close tree windows
+    if #wins - #floating_wins - #tree_wins <= 1 then
       for _, w in ipairs(tree_wins) do
         vim.api.nvim_win_close(w, true)
       end
     end
+  end,
+})
+
+-- Auto-close vim when nvim-tree is the last window
+vim.api.nvim_create_autocmd("BufEnter", {
+  nested = true,
+  callback = function()
+    local wins = vim.api.nvim_list_wins()
+    if #wins == 1 then
+      local bufname = vim.api.nvim_buf_get_name(vim.api.nvim_win_get_buf(wins[1]))
+      if bufname:match "NvimTree_" ~= nil then
+        vim.cmd "quit"
+      end
+    end
+  end,
+})
+
+-- Force brighter nvim-tree cursor line highlight and visual selection
+vim.api.nvim_create_autocmd({ "VimEnter", "ColorScheme", "FileType" }, {
+  pattern = { "*", "NvimTree" },
+  callback = function()
+    vim.api.nvim_set_hl(0, "NvimTreeCursorLine", { bg = "#2B2B40" })
+    vim.api.nvim_set_hl(0, "Visual", { bg = "#723A3F" })
   end,
 })
 
