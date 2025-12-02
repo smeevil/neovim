@@ -19,6 +19,72 @@ return {
   { "nvim-mini/mini.nvim", version = "*" },
 
   {
+    "nvim-tree/nvim-tree.lua",
+    opts = function()
+      return {
+        view = {
+          adaptive_size = true,
+          width = {
+            min = 30,
+          },
+          cursorline = true,
+        },
+        filters = {
+          dotfiles = false,
+          git_ignored = false,
+        },
+        modified = {
+          enable = true,
+        },
+        filesystem_watchers = {
+          enable = true,
+        },
+        on_attach = function(bufnr)
+          local api = require('nvim-tree.api')
+
+          -- Set up default nvim-tree keymaps
+          api.config.mappings.default_on_attach(bufnr)
+
+          -- Add preview keymaps
+          local preview = require('nvim-tree-preview')
+
+          local function opts(desc)
+            return { desc = 'nvim-tree: ' .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
+          end
+
+          vim.keymap.set('n', 'p', function()
+            local node = api.tree.get_node_under_cursor()
+            preview.node(node, { toggle_focus = true })
+          end, opts 'Preview')
+
+          vim.keymap.set('n', '<Esc>', preview.unwatch, opts 'Close Preview')
+        end,
+      }
+    end,
+  },
+
+  {
+    "b0o/nvim-tree-preview.lua",
+    dependencies = { "nvim-tree/nvim-tree.lua", "nvim-lua/plenary.nvim" },
+    opts = {
+      min_width = 80,
+      min_height = 20,
+      max_width = 999,
+      max_height = 999,
+      wrap = false,
+      win_position = {
+        row = function(tree_win, size)
+          return math.floor((vim.o.lines - size.height) / 2)
+        end,
+        col = function(tree_win, size)
+          local tree_width = vim.fn.winwidth(tree_win)
+          return tree_width + 2
+        end,
+      },
+    },
+  },
+
+  {
     "apple/pkl-neovim",
     lazy = true,
     event = { "BufReadPre *.pkl", "BufNewFile *.pkl" },
@@ -82,6 +148,26 @@ return {
     end,
     keys = {
       { "ga.", "<cmd>TextCaseOpenTelescope<CR>", mode = { "n", "x" }, desc = "Telescope: Text Case" },
+    },
+  },
+
+  {
+    "kndndrj/nvim-dbee",
+    dependencies = {
+      "MunifTanjim/nui.nvim",
+    },
+    build = function()
+      require("dbee").install()
+    end,
+    config = function()
+      require("dbee").setup({
+        sources = {
+          require("dbee.sources").FileSource:new(vim.fn.stdpath("cache") .. "/dbee/persistence.json"),
+        },
+      })
+    end,
+    keys = {
+      { "<leader>db", "<cmd>lua require('dbee').toggle()<CR>", desc = "Toggle Database UI" },
     },
   },
 
@@ -294,31 +380,11 @@ return {
           auto_save_enabled = true,
           auto_restore_enabled = true,
           auto_session_enable_last_session = false,
-          -- Save session even on force quit
           session_lens = {
             buftypes_to_ignore = {},
             load_on_setup = true,
             theme_conf = { border = true },
             previewer = false,
-          },
-          -- Pre-save hook to ensure everything is saved
-          pre_save_cmds = {
-            function()
-              -- Close nvim-tree before saving session
-              local tree_api = require("nvim-tree.api")
-              if tree_api.tree.is_visible() then
-                tree_api.tree.close()
-              end
-            end,
-          },
-          -- Post-restore hook to open nvim-tree after restoring
-          post_restore_cmds = {
-            function()
-              -- Delay opening to let session restore complete
-              vim.defer_fn(function()
-                require("nvim-tree.api").tree.open()
-              end, 100)
-            end,
           },
         }
       end,
