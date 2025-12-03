@@ -25,3 +25,5 @@ map("n", "<leader>d", vim.diagnostic.open_float, { desc = "Show Diagnostic" })
 map("n", "gl", vim.diagnostic.open_float, { desc = "Show Diagnostic" })
 
 -- map({ "n", "i", "v" }, "<C-s>", "<cmd> w <cr>")
+--
+vim.keymap.set("i", "<C-Space>", "<C-x><C-o>")
