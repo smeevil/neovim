@@ -25,7 +25,8 @@ map("n", "<leader>d", vim.diagnostic.open_float, { desc = "Show Diagnostic" })
 map("n", "gl", vim.diagnostic.open_float, { desc = "Show Diagnostic" })
 
 -- map({ "n", "i", "v" }, "<C-s>", "<cmd> w <cr>")
-
+--
+vim.keymap.set("i", "<C-Space>", "<C-x><C-o>")
 -- Move lines up/down (like IntelliJ's Option+Shift+Up/Down)
 map("n", "<M-S-Down>", ":m .+1<CR>==", { desc = "Move line down" })
 map("n", "<M-S-Up>", ":m .-2<CR>==", { desc = "Move line up" })

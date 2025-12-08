@@ -15,6 +15,17 @@ return {
     end,
   },
 
+  {
+    "j-hui/fidget.nvim",
+    opts = {
+      notification = {
+        window = {
+          winblend = 0,
+        },
+      },
+    },
+  },
+
   { "nvim-tree/nvim-web-devicons", opts = {} },
   { "nvim-mini/mini.nvim", version = "*" },
 
@@ -40,24 +51,24 @@ return {
           enable = true,
         },
         on_attach = function(bufnr)
-          local api = require('nvim-tree.api')
+          local api = require "nvim-tree.api"
 
           -- Set up default nvim-tree keymaps
           api.config.mappings.default_on_attach(bufnr)
 
           -- Add preview keymaps
-          local preview = require('nvim-tree-preview')
+          local preview = require "nvim-tree-preview"
 
           local function opts(desc)
-            return { desc = 'nvim-tree: ' .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
+            return { desc = "nvim-tree: " .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
           end
 
-          vim.keymap.set('n', 'p', function()
+          vim.keymap.set("n", "p", function()
             local node = api.tree.get_node_under_cursor()
             preview.node(node, { toggle_focus = true })
-          end, opts 'Preview')
+          end, opts "Preview")
 
-          vim.keymap.set('n', '<Esc>', preview.unwatch, opts 'Close Preview')
+          vim.keymap.set("n", "<Esc>", preview.unwatch, opts "Close Preview")
         end,
       }
     end,
@@ -143,8 +154,8 @@ return {
     dependencies = { "nvim-telescope/telescope.nvim" },
     event = "VeryLazy",
     config = function()
-      require("textcase").setup({})
-      require("telescope").load_extension("textcase")
+      require("textcase").setup {}
+      require("telescope").load_extension "textcase"
     end,
     keys = {
       { "ga.", "<cmd>TextCaseOpenTelescope<CR>", mode = { "n", "x" }, desc = "Telescope: Text Case" },
@@ -160,11 +171,11 @@ return {
       require("dbee").install()
     end,
     config = function()
-      require("dbee").setup({
+      require("dbee").setup {
         sources = {
-          require("dbee.sources").FileSource:new(vim.fn.stdpath("cache") .. "/dbee/persistence.json"),
+          require("dbee.sources").FileSource:new(vim.fn.stdpath "cache" .. "/dbee/persistence.json"),
         },
-      })
+      }
     end,
     keys = {
       { "<leader>db", "<cmd>lua require('dbee').toggle()<CR>", desc = "Toggle Database UI" },
@@ -173,7 +184,7 @@ return {
 
   {
     "MeanderingProgrammer/render-markdown.nvim",
-    ft = "markdown",
+    ft = { "markdown", "codecompanion" },
     dependencies = {
       "nvim-treesitter/nvim-treesitter",
       "nvim-tree/nvim-web-devicons",
@@ -485,7 +496,18 @@ return {
 
     {
       "NvChad/nvim-colorizer.lua",
-      ft = { "css", "scss", "sass", "html", "javascript", "typescript", "javascriptreact", "typescriptreact", "vue", "svelte" },
+      ft = {
+        "css",
+        "scss",
+        "sass",
+        "html",
+        "javascript",
+        "typescript",
+        "javascriptreact",
+        "typescriptreact",
+        "vue",
+        "svelte",
+      },
       opts = {
         user_default_options = {
           RGB = true,
@@ -683,16 +705,19 @@ return {
       "mfussenegger/nvim-lint",
       event = { "BufReadPost", "BufNewFile" },
       config = function()
-        local lint = require("lint")
+        local lint = require "lint"
 
         -- Define custom kubeconform linter
         lint.linters.kubeconform = {
           cmd = "kubeconform",
           stdin = true,
           args = {
-            "-output", "json",
-            "-schema-location", "default",
-            "-schema-location", "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json",
+            "-output",
+            "json",
+            "-schema-location",
+            "default",
+            "-schema-location",
+            "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json",
             "-",
           },
           stream = "stdout",
@@ -802,12 +827,12 @@ return {
         select = {
           enabled = true,
           backend = { "telescope", "builtin" },
-          telescope = require("telescope.themes").get_dropdown({
+          telescope = require("telescope.themes").get_dropdown {
             layout_config = {
               width = 0.8,
               height = 0.6,
             },
-          }),
+          },
         },
       },
     },
@@ -868,5 +893,69 @@ return {
   {
     "nvim-treesitter/nvim-treesitter",
     opts = require "configs.treesitter",
+  },
+  {
+    "olimorris/codecompanion.nvim",
+    lazy = false,
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+    },
+    config = function()
+      local current_model = "anthropic/claude-sonnet-4-20250514" -- Define your model here
+      require("codecompanion").setup {
+        strategies = {
+          chat = {
+            adapter = "openrouter",
+          },
+          inline = {
+            adapter = "openrouter",
+          },
+        },
+        adapters = {
+          http = {
+            openrouter = function()
+              return require("codecompanion.adapters").extend("openai_compatible", {
+                url = "https://openrouter.ai/api/v1/chat/completions",
+                env = {
+                  api_key = "OPENROUTER_API_KEY",
+                },
+                headers = {
+                  ["HTTP-Referer"] = "https://github.com/your-username", -- Optional: for rankings
+                  ["X-Title"] = "CodeCompanion", -- Optional: shows in rankings
+                },
+                schema = {
+                  model = {
+                    default = "x-ai/grok-code-fast-1",
+                  },
+                },
+              })
+            end,
+          },
+        },
+      }
+      vim.keymap.set({ "n", "v" }, "<leader>cc", "<cmd>CodeCompanionActions<cr>", { noremap = true, silent = true })
+    end,
+  },
+  {
+    "echasnovski/mini.diff",
+    config = function()
+      local diff = require "mini.diff"
+      diff.setup {
+        -- Disabled by default
+        source = diff.gen_source.none(),
+      }
+    end,
+  },
+  {
+    "HakonHarnes/img-clip.nvim",
+    opts = {
+      filetypes = {
+        codecompanion = {
+          prompt_for_file_name = false,
+          template = "[Image]($FILE_PATH)",
+          use_absolute_path = true,
+        },
+      },
+    },
   },
 }
