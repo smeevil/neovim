@@ -26,6 +26,21 @@ return {
     },
   },
 
+  {
+    "rmagatti/goto-preview",
+    dependencies = { "rmagatti/logger.nvim" },
+    event = "LspAttach",
+    opts = {},
+    keys = {
+      { "<leader>pd", "<cmd>lua require('goto-preview').goto_preview_definition()<cr>", desc = "Preview Definition" },
+      { "<leader>pt", "<cmd>lua require('goto-preview').goto_preview_type_definition()<cr>", desc = "Preview Type Definition" },
+      { "<leader>pi", "<cmd>lua require('goto-preview').goto_preview_implementation()<cr>", desc = "Preview Implementation" },
+      { "<leader>pD", "<cmd>lua require('goto-preview').goto_preview_declaration()<cr>", desc = "Preview Declaration" },
+      { "<leader>pr", "<cmd>lua require('goto-preview').goto_preview_references()<cr>", desc = "Preview References" },
+      { "<leader>P", "<cmd>lua require('goto-preview').close_all_win()<cr>", desc = "Close Preview Windows" },
+    },
+  },
+
   { "nvim-tree/nvim-web-devicons", opts = {} },
   { "nvim-mini/mini.nvim", version = "*" },
 
