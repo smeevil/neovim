@@ -29,3 +29,9 @@ vim.diagnostic.config({
   update_in_insert = false,
   severity_sort = true,
 })
+
+-- Command aliases for common typos (capital letter variations)
+vim.api.nvim_create_user_command("Q", "q<bang>", { bang = true })
+vim.api.nvim_create_user_command("W", "w<bang>", { bang = true })
+vim.api.nvim_create_user_command("Wq", "wq<bang>", { bang = true })
+vim.api.nvim_create_user_command("WQ", "wq<bang>", { bang = true })

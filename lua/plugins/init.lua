@@ -852,8 +852,58 @@ return {
       },
     },
   },
-  -- Enable blink.cmp for better completion
+  -- Import NvChad blink config first, then override
   { import = "nvchad.blink.lazyspec" },
+
+  -- AI ghost text completion with Ollama
+  {
+    "huggingface/llm.nvim",
+    lazy = false, -- Load immediately to ensure LSP starts
+    opts = {
+      backend = "ollama",
+      model = "qwen2.5-coder:7b-base",
+      url = "http://localhost:11434",
+      accept_keymap = "<Tab>",
+      dismiss_keymap = "<S-Tab>",
+      debounce_ms = 150,
+      enable_suggestions_on_startup = true,
+      enable_suggestions_on_files = "*",
+      fim = {
+        enabled = true,
+        prefix = "<|fim_prefix|>",
+        middle = "<|fim_middle|>",
+        suffix = "<|fim_suffix|>",
+      },
+      tokens_to_clear = { "<|endoftext|>", "<|fim_pad|>" },
+      request_body = {
+        raw = true,
+        options = {
+          temperature = 0.2,
+          num_predict = 100,
+        },
+      },
+    },
+  },
+
+  -- Customize blink.cmp: disable for prose, fix keymaps
+  {
+    "saghen/blink.cmp",
+    opts = function(_, opts)
+      local prose_ft = { markdown = true, text = true, gitcommit = true }
+
+      -- Disable blink popup for prose files (using llm.nvim ghost text instead)
+      opts.enabled = function()
+        return not prose_ft[vim.bo.filetype]
+      end
+
+      -- Keymaps
+      opts.keymap = opts.keymap or {}
+      opts.keymap["<CR>"] = { "fallback" } -- Enter = newline, not accept
+      opts.keymap["<S-Tab>"] = { "select_prev", "snippet_backward", "fallback" }
+
+      return opts
+    end,
+  },
 
   {
     "nvim-treesitter/nvim-treesitter",
